@@ -6,6 +6,11 @@ public class Algorithm {
         A[0] = 0.0;
         B[n-1] = 0.0;
 
+        for (int i = 0; i < n; i++) {
+            A[i] *= -1;
+            B[i] *= -1;
+        }
+
         alpha[0] = B[0] / C[0];
         betta[0] = F[0] / C[0];
 

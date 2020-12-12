@@ -1,3 +1,8 @@
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Predicate;
 
@@ -5,6 +10,81 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //userInput();
+
+        Uxx(100);
+
+    }
+
+    private static void Uxx(int n){
+        MathContext context = new MathContext(3, RoundingMode.HALF_UP);
+
+        double h = 1.0 / n;
+        double[] x = new double[n + 1];
+        System.out.print("Аргумент: \t");
+        for (int i = 0; i <= n; i++) {
+            //Аргументы
+            x[i] = h * i;
+            BigDecimal result = new BigDecimal(x[i], context);
+            System.out.printf("%6.3f \t\t", result);
+        }
+        System.out.println();
+
+        double[] solution = new double[n + 1];
+        solution[0] = 0;
+        solution[n] = 0;
+        for (int i = 1; i < n; i++) {
+            //Точные решения
+            solution[i] = x[i] * (x[i] - 1);
+        }
+        System.out.print("Точное: \t");
+        for (int i = 0; i <= n; i++) {
+            BigDecimal result = new BigDecimal(solution[i], context);
+            System.out.printf("%6.3f \t\t", result);
+        }
+        System.out.println();
+
+        int count = n - 1;
+
+        Double[] A = new Double[count];
+        Double[] C = new Double[count];
+        Double[] B = new Double[count];
+        Double[] F = new Double[count];
+
+        for (int i = 0; i < count; i++) {
+            A[i] = 1.0;
+            C[i] = -2.0;
+            B[i] = 1.0;
+            F[i] = 2 * h * h;
+        }
+
+        double[] algoCut = Algorithm.calculate(A, B, C, F, count);
+        double[] algo = new double[n + 1];
+        for (int i = 0; i <= n; i++) {
+            if (i == 0 || i == n) {
+                algo[i] = 0.0;
+                continue;
+            }
+            //Решения методом прогонки
+            algo[i] = algoCut[i - 1];
+        }
+
+        System.out.print("Прогонка: \t");
+        for (int i = 0; i <= n; i++) {
+            BigDecimal result = new BigDecimal(algo[i], context);
+            System.out.printf("%6.3f \t\t", result);
+        }
+        System.out.println();
+
+        System.out.println("Решения совпадают: " + check(solution, algo, n, 11));
+
+        for (int i = 0; i <= n; i++) {
+            //System.out.println(x[i] +"\t"+ solution[i] +"\t"+ algo[i]);
+            System.out.printf(Locale.FRANCE, "%f\t%f\t%f\n", x[i], solution[i], algo[i]);
+        }
+    }
+
+    private static void userInput() {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Решение системы линейных уравнений вида Ax = F");
 
@@ -35,23 +115,20 @@ public class Main {
                 System.out.println("X" + (i + 1) + " = " + x[i]);
             }
         }
+    }
 
-/*
-        int n = 5;
-        Double[] A = {null, 3.0, 5.0, 6.00, 5.00};
-        Double[] C = {2.0, 8.0, 12.0, 18.0, 10.0};
-        Double[] B = {1.0, 1.0, -2.0, 4.0, null};
-        Double[] F = {-25.0, 72.0, -69.0, -156.0, 20.0};
+    private static boolean check(double[] a, double[] b, int n, int precision){
+        MathContext context = new MathContext(precision, RoundingMode.HALF_UP);
 
-        System.out.println("Решение:");
-        double[] x = Algorithm.calculate(A, B, C, F, n);
-        MathContext context = new MathContext(4, RoundingMode.HALF_UP);
         for (int i = 0; i < n; i++) {
-            BigDecimal result = new BigDecimal(x[i], context);
-            System.out.println("X" + (i + 1) + " = " + result);
-        }
-*/
+            BigDecimal ai = new BigDecimal(a[i], context);
+            BigDecimal bi = new BigDecimal(b[i], context);
 
+            if(ai.compareTo(bi) != 0){
+                return false;
+            }
+        }
+        return true;
     }
 
     private static double scanNumber(String numberName, Predicate<Double> predicate,
@@ -104,21 +181,21 @@ public class Main {
             if (i == 0) {
                 double[] scannedNumbers = scanNumberLine("Два элемента строки #" + (i + 1) + ": ", 2, scanner);
                 C[i] = scannedNumbers[0];
-                B[i] = scannedNumbers[1] * -1;
+                B[i] = scannedNumbers[1];
                 continue;
             }
 
             if (i == (n - 1)) {
                 double[] scannedNumbers = scanNumberLine("Два элемента строки #" + (i + 1) + ": ", 2, scanner);
-                A[i] = scannedNumbers[0] * -1;
+                A[i] = scannedNumbers[0];
                 C[i] = scannedNumbers[1];
                 continue;
             }
 
             double[] scannedNumbers = scanNumberLine("Три элемента строки #" + (i + 1) + ": ", 3, scanner);
-            A[i] = scannedNumbers[0] * -1;
+            A[i] = scannedNumbers[0];
             C[i] = scannedNumbers[1];
-            B[i] = scannedNumbers[2] * -1;
+            B[i] = scannedNumbers[2];
         }
     }
 
@@ -131,15 +208,15 @@ public class Main {
             int restCount = n - i - 2;
             if (i == 0) {
                 System.out.printf("%6.2f ", C[i]);
-                System.out.printf("%6.2f ", B[i] * -1);
+                System.out.printf("%6.2f ", B[i]);
             } else if (i == (n - 1)) {
-                System.out.printf("%6.2f ", A[i] * -1);
+                System.out.printf("%6.2f ", A[i]);
                 System.out.printf("%6.2f ", C[i]);
                 restCount += 1;
             } else {
-                System.out.printf("%6.2f ", A[i] * -1);
+                System.out.printf("%6.2f ", A[i]);
                 System.out.printf("%6.2f ", C[i]);
-                System.out.printf("%6.2f ", B[i] * -1);
+                System.out.printf("%6.2f ", B[i]);
             }
 
             for (int j = 0; j < restCount; j++) {
