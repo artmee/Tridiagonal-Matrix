@@ -1,4 +1,6 @@
 public class Algorithm {
+
+    //Метод прогонки
     public static double[] calculate(Double[] A, Double[] B, Double[] C, Double[] F, int n) {
         double[] alpha = new double[n];
         double[] betta = new double[n];

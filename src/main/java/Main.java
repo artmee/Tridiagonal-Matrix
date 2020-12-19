@@ -1,7 +1,6 @@
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Predicate;
@@ -10,31 +9,33 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //Решение пользовательской системы уравнений методом прогонки
         //userInput();
 
-        Uxx(100);
-
+        //Решение уравнения U_xx = 2 при u(0) = 0, u(1) = 0, где n - количество интервалов отрезка [0,1]
+        int n = 100;
+        Uxx(n);
     }
 
     private static void Uxx(int n){
         MathContext context = new MathContext(3, RoundingMode.HALF_UP);
 
+        //Инициализация аргументов функции
         double h = 1.0 / n;
         double[] x = new double[n + 1];
         System.out.print("Аргумент: \t");
         for (int i = 0; i <= n; i++) {
-            //Аргументы
             x[i] = h * i;
             BigDecimal result = new BigDecimal(x[i], context);
             System.out.printf("%6.3f \t\t", result);
         }
         System.out.println();
 
+        //Нахождение точных решений
         double[] solution = new double[n + 1];
         solution[0] = 0;
         solution[n] = 0;
         for (int i = 1; i < n; i++) {
-            //Точные решения
             solution[i] = x[i] * (x[i] - 1);
         }
         System.out.print("Точное: \t");
@@ -44,13 +45,13 @@ public class Main {
         }
         System.out.println();
 
-        int count = n - 1;
 
+        //Инициализация матриц для решения методом прогонки
+        int count = n - 1;
         Double[] A = new Double[count];
         Double[] C = new Double[count];
         Double[] B = new Double[count];
         Double[] F = new Double[count];
-
         for (int i = 0; i < count; i++) {
             A[i] = 1.0;
             C[i] = -2.0;
@@ -58,17 +59,16 @@ public class Main {
             F[i] = 2 * h * h;
         }
 
+        //Решение методом прогонки
         double[] algoCut = Algorithm.calculate(A, B, C, F, count);
         double[] algo = new double[n + 1];
         for (int i = 0; i <= n; i++) {
             if (i == 0 || i == n) {
-                algo[i] = 0.0;
-                continue;
+                algo[i] = 0.0;continue;
             }
-            //Решения методом прогонки
+
             algo[i] = algoCut[i - 1];
         }
-
         System.out.print("Прогонка: \t");
         for (int i = 0; i <= n; i++) {
             BigDecimal result = new BigDecimal(algo[i], context);
@@ -76,13 +76,28 @@ public class Main {
         }
         System.out.println();
 
-        System.out.println("Решения совпадают: " + check(solution, algo, n, 11));
 
+        //Сравнивание полученных значений
+        System.out.println("Решения совпадают: " + check(solution, algo, n, 11));
         for (int i = 0; i <= n; i++) {
-            //System.out.println(x[i] +"\t"+ solution[i] +"\t"+ algo[i]);
             System.out.printf(Locale.FRANCE, "%f\t%f\t%f\n", x[i], solution[i], algo[i]);
         }
     }
+
+    private static boolean check(double[] a, double[] b, int n, int precision){
+        MathContext context = new MathContext(precision, RoundingMode.HALF_UP);
+
+        for (int i = 0; i < n; i++) {
+            BigDecimal ai = new BigDecimal(a[i], context);
+            BigDecimal bi = new BigDecimal(b[i], context);
+
+            if(ai.compareTo(bi) != 0){
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     private static void userInput() {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -115,20 +130,6 @@ public class Main {
                 System.out.println("X" + (i + 1) + " = " + x[i]);
             }
         }
-    }
-
-    private static boolean check(double[] a, double[] b, int n, int precision){
-        MathContext context = new MathContext(precision, RoundingMode.HALF_UP);
-
-        for (int i = 0; i < n; i++) {
-            BigDecimal ai = new BigDecimal(a[i], context);
-            BigDecimal bi = new BigDecimal(b[i], context);
-
-            if(ai.compareTo(bi) != 0){
-                return false;
-            }
-        }
-        return true;
     }
 
     private static double scanNumber(String numberName, Predicate<Double> predicate,
