@@ -79,6 +79,9 @@ public class Main {
 
         //Сравнивание полученных значений
         System.out.println("Решения совпадают: " + check(solution, algo, n, 11));
+        System.out.println();
+
+        //Печать точек для графика
         for (int i = 0; i <= n; i++) {
             System.out.printf(Locale.FRANCE, "%f\t%f\t%f\n", x[i], solution[i], algo[i]);
         }
